@@ -1,3 +1,3 @@
 # textengine2
- simple hobby project
+ simple hobby project;
  requires python 3, windows
