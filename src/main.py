@@ -82,8 +82,11 @@ class World:
 # ============================ FUNCTION DEFINITIONS ============================
 def worldToFile(world): #save world array to file
   clone = copy.deepcopy(world) #copy world so we can modify it"s values just for this function
-
-  file = open(os.getcwd() + "\\src\\worlds\\" + clone.name + ".json", "w") #create file if not exist, write only
+  
+  if debug.platformName() == "Windows": #diff os filepath formats
+    file = open(os.getcwd() + "\\src\\worlds\\" + clone.name + ".json", "w") #create file if not exist, write only
+  elif debug.platformName() == "Linux":
+    file = open(os.getcwd() + "/src/worlds/" + clone.name + ".json", "w")
 
   newlist = []
   for obj in clone.entities: #change objects in list to json
@@ -94,7 +97,10 @@ def worldToFile(world): #save world array to file
   file.close()
 
 def fileToWorld(name): #load world array from file
-  file = open(os.getcwd() + "\\src\\worlds\\" + name + ".json", "r") #read only
+  if debug.platformName() == "Windows": #diff os filepath formats
+    file = open(os.getcwd() + "\\src\\worlds\\" + name + ".json", "r") #read only
+  elif debug.platformName() == "Linux":
+    file = open(os.getcwd() + "/src/worlds/" + name + ".json", "r")
   
   shell = World(shell=True) #new World instance without instance vars
 
