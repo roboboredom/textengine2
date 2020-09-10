@@ -45,7 +45,7 @@ class World:
       self.entities = []
 
   def print(self): #called when object treated as a string
-    print(debug.clrcodes.fg.GREEN, end="")
+    print(debug.clrcodes.fg.BLUE, end="")
     for y in self.array:
       for x in y:
         if isinstance(x, int):
@@ -80,7 +80,7 @@ class World:
     return self.entities[self.getVal(x, y)]
 
 # ============================ FUNCTION DEFINITIONS ============================
-def worldToFile(world): #save world array to file
+def saveWorldFile(world): #save world array to file
   clone = copy.deepcopy(world) #copy world so we can modify it"s values just for this function
   
   if debug.platformName() == "Windows": #diff os filepath formats
@@ -94,9 +94,10 @@ def worldToFile(world): #save world array to file
   clone.entities = newlist
 
   file.write(json.dumps(clone.__dict__, indent="\t"))
+  del clone #we dont need our copy anymore, delete it
   file.close()
 
-def fileToWorld(name): #load world array from file
+def loadWorldFile(name): #load world array from file
   if debug.platformName() == "Windows": #diff os filepath formats
     file = open(os.getcwd() + "\\src\\worlds\\" + name + ".json", "r") #read only
   elif debug.platformName() == "Linux":
@@ -121,6 +122,12 @@ def fileToWorld(name): #load world array from file
   file.close()
   return shell
 
+def delWorldFile(name): #delete world file
+  if debug.platformName() == "Windows": #diff os filepath formats
+    os.remove(os.getcwd() + "\\src\\worlds\\" + name + ".json") #delete file
+  elif debug.platformName() == "Linux":
+    os.remove(os.getcwd() + "/src/worlds/" + name + ".json")
+  
 # ============================ MAIN ============================================
 debug.platformCheck() #check if platform/os compatible
 print(debug.clrcodes.fg.GREEN, ">>>>>> textengine2 || by dawson gray <<<<<< \nType \"help\" for a list of commands.\n", debug.clrcodes.fg.WHITE, sep="")
@@ -129,47 +136,72 @@ print(debug.clrcodes.fg.GREEN, ">>>>>> textengine2 || by dawson gray <<<<<< \nTy
 t_rock = BaseEntity("Rock", "#")
 t_bush = BaseEntity("Bush", "%")
 
-while True:
-  cmd = input("> ").split()
+curWorld = None
+while True: #mainloop
+  cmd = input("> ")
 
-  if cmd[0] == "write":
-    if len(cmd) > 1 and len(cmd) <= 2: #command only accepts 2 args
-      try:
-        curWorld = World(cmd[1])
+  if cmd != "" and cmd.isspace() == False: #test if input is only whitespace or empty
+    cmd = cmd.split() #split cmd by spaces into list of words
 
-        curWorld.insertCopyAt(t_rock, 2, 3) #example filler entities
-        curWorld.insertCopyAt(t_rock, 1, 1)
-        curWorld.insertCopyAt(t_bush, 4, 2)
+    if cmd[0] == "save":
+      if len(cmd) > 1 and len(cmd) <= 2: #command only accepts 2 args
+        try:
+          curWorld = World(cmd[1])
+          
+          curWorld.insertCopyAt(t_rock, 2, 3) #EXAMPLE FILLER ENTITIES
+          curWorld.insertCopyAt(t_rock, 1, 1) 
+          curWorld.insertCopyAt(t_bush, 4, 2)
+          
+          saveWorldFile(curWorld) #save world to textengine2/src/worlds
+          
+          print(debug.clrcodes.fg.GREEN + "Saved world \"" + cmd[1] + "\" to worlds folder." + debug.clrcodes.fg.WHITE)
+        except:
+          print(debug.clrcodes.fg.RED + "World name \"" + cmd[1] + "\" cannot be used as filename." + debug.clrcodes.fg.WHITE)
+      else:
+        print(debug.clrcodes.fg.RED + "Invalid amount of arguments." + debug.clrcodes.fg.WHITE)
         
-        worldToFile(curWorld) #save world to textengine2/src/worlds/
-        
-        curWorld.print()
-      except:
-        print(debug.clrcodes.fg.RED + "World name \"" + cmd[1] + "\" cannot be used as filename." + debug.clrcodes.fg.WHITE)
-    else:
-      print(debug.clrcodes.fg.RED + "Invalid amount of arguments." + debug.clrcodes.fg.WHITE)
-      
-  elif cmd[0] == "read":
-    if len(cmd) > 1 and len(cmd) <= 2: #command only accepts two arguments 
-      try:
-        curWorld = fileToWorld(cmd[1]) #load world from textengine2/src/worlds/ 
-        curWorld.print()
-      except:
-        print(debug.clrcodes.fg.RED + "No world named \"" + cmd[1] + "\" saved." + debug.clrcodes.fg.WHITE)
-    else:
-      print(debug.clrcodes.fg.RED + "Invalid amount of arguments." + debug.clrcodes.fg.WHITE)
-  
-  elif cmd[0] == "help":
-    if len(cmd) == 1:
-      print(debug.clrcodes.fg.GREEN +
-            "write <worldname>\n" +
-            "read <worldname>\n" +
-            "help" + debug.clrcodes.fg.WHITE)
-    else:
-      print(debug.clrcodes.fg.RED + "Invalid amount of arguments." + debug.clrcodes.fg.WHITE)
+    elif cmd[0] == "load":
+      if len(cmd) > 1 and len(cmd) <= 2: #command only accepts two arguments 
+        try:
+          curWorld = loadWorldFile(cmd[1]) #load world from textengine2/src/worlds/ 
+          
+          print(debug.clrcodes.fg.GREEN + "Loaded world \"" + cmd[1] + "\" from worlds folder." + debug.clrcodes.fg.WHITE)
+        except:
+          print(debug.clrcodes.fg.RED + "No world named \"" + cmd[1] + "\" saved." + debug.clrcodes.fg.WHITE)
+      else:
+        print(debug.clrcodes.fg.RED + "Invalid amount of arguments." + debug.clrcodes.fg.WHITE)
+    
+    elif cmd[0] == "del":
+      if len(cmd) > 1 and len(cmd) <= 2: #command only accepts two arguments 
+        try:
+          delWorldFile(cmd[1]) #load world from textengine2/src/worlds/
+          
+          print(debug.clrcodes.fg.GREEN + "Deleted world \"" + cmd[1] + "\" from worlds folder." + debug.clrcodes.fg.WHITE)
+        except:
+          print(debug.clrcodes.fg.RED + "No world named \"" + cmd[1] + "\" saved." + debug.clrcodes.fg.WHITE)
+      else:
+        print(debug.clrcodes.fg.RED + "Invalid amount of arguments." + debug.clrcodes.fg.WHITE)
+    
+    elif cmd[0] == "help":
+      if len(cmd) == 1:
+        print(debug.clrcodes.fg.GREEN +
+              "save <worldname>\n" +
+              "load <worldname>\n" +
+              "del <worldname>\n" +
+              "help" + debug.clrcodes.fg.WHITE)
+      else:
+        print(debug.clrcodes.fg.RED + "Invalid amount of arguments." + debug.clrcodes.fg.WHITE)
 
-  else:
-    print(debug.clrcodes.fg.RED + "Invalid command." + debug.clrcodes.fg.WHITE)
+    else:
+      print(debug.clrcodes.fg.RED + "Invalid command." + debug.clrcodes.fg.WHITE)
+  else: 
+    print(debug.clrcodes.fg.RED + "No command entered." + debug.clrcodes.fg.WHITE)
+    
+  if curWorld != None:
+    print(debug.clrcodes.fg.BLUE + "curWorld: " + curWorld.name + ", map:" + debug.clrcodes.fg.WHITE)
+    curWorld.print()
+    print(debug.clrcodes.fg.BLUE + "entity test:" + debug.clrcodes.fg.WHITE)
+    debug.objprint(curWorld.getEntity(4, 2), True)
 
 
 
