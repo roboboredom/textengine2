@@ -1,4 +1,5 @@
-#debug.py - debug / logging stuff
+#debug.py - debug, system, console stuff
+import platform
 
 class clrcodes: #ascii color escape codes
   class fg:
@@ -19,6 +20,18 @@ class clrcodes: #ascii color escape codes
     PURPLE    = "\033[45m"
     CYAN      = "\033[46m"
     LIGHTGREY = "\033[47m"
+
+def platformName(): #return os name (linux, windows)
+  return platform.system()
+
+def platformCheck(): #check if system compatible, log info
+  s = platform.system()
+  if s == "Linux": # linux
+    print(clrcodes.fg.BLUE, "Running on Linux. [SUPPORTED]", clrcodes.fg.WHITE, sep = "")
+  elif s == "Windows": # windows
+    print(clrcodes.fg.BLUE, "Running on Windows. [SUPPORTED]", clrcodes.fg.WHITE, sep = "")
+  else: # other os
+    print(clrcodes.fg.RED, "\tRunning on unknown OS. [NOT SUPPORTED] Things may not work!", clrcodes.fg.WHITE, sep = "")
 
 def objprint(obj, compact=False):
   """ 

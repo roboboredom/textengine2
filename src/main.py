@@ -116,7 +116,8 @@ def fileToWorld(name): #load world array from file
   return shell
 
 # ============================ MAIN ============================================
-print(debug.clrcodes.fg.GREEN, "================ TextEngine2 || by dawson gray ================\nType \"help\" for a list of commands.\n", debug.clrcodes.fg.WHITE, sep="")
+debug.platformCheck() #check if platform/os compatible
+print(debug.clrcodes.fg.GREEN, ">>>>>> textengine2 || by dawson gray <<<<<< \nType \"help\" for a list of commands.\n", debug.clrcodes.fg.WHITE, sep="")
 
 #template instances
 t_rock = BaseEntity("Rock", "#")
