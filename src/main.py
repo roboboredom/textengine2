@@ -1,8 +1,9 @@
 import platform
-import te2.world #world class, functions
+import te2.world
 
 # ============================ CLASS DEFINITION =================================
-class clrcodes: #ascii color escape codes
+class clrcodes:
+  """ascii color escape codes"""
   class fg:
     black   = "\u001b[30m"
     red     = "\u001b[31m"
@@ -41,11 +42,13 @@ def platformCheck():
   else: # other os
     print(clrcodes.fg.red, "\tRunning on unknown OS. [NOT SUPPORTED] Things may not work!", clrcodes.fg.white, sep = "")
 
-def objprint(obj, compact=False):
-  #prints a json-style snippet containing all instance vars of an obj
-  #set compact=True for no newlines                                   
-  print(clrcodes.fg.green, end="")
-  
+def objPrint(obj, compact=False):
+  """
+  prints a json-style snippet containing all instance vars of an obj
+  set compact=True for no newlines                                   
+  """
+  print(clrcodes.fg.blue, end="")
+
   if compact:
     print(obj.__class__.__name__," 0x",id(obj)," {",sep="",end="")
     index = 0 #use this to tell when we are on the last key so we don"t put that last comma
@@ -77,7 +80,9 @@ print(clrcodes.fg.green, ">>>>>> textengine2 || by dawson gray <<<<<< \nType \"h
 t_rock = BaseEntity("Rock", "#")
 t_bush = BaseEntity("Bush", "%")
 
-curWorld = None
+loadedWorlds = {}
+selectedWorld = None #current selected world in loadedWorlds
+
 while True: #mainloop
   cmd = input("> ")
 
@@ -86,50 +91,55 @@ while True: #mainloop
 
     if cmd[0] == "save":
       if len(cmd) > 1 and len(cmd) <= 2: #command only accepts 2 args
-        try:
-          curWorld = te2.world.World(cmd[1])
-          
-          curWorld.insertCopyAt(t_rock, 2, 3) #EXAMPLE FILLER ENTITIES
-          curWorld.insertCopyAt(t_rock, 1, 1) 
-          curWorld.insertCopyAt(t_bush, 4, 2)
-          
-          te2.world.saveWorldFile(curWorld) #save world to textengine2/src/worlds
-          
-          print(clrcodes.fg.green + "Saved world \"" + cmd[1] + "\" to worlds folder." + clrcodes.fg.white)
-        except:
-          print(clrcodes.fg.red + "World name \"" + cmd[1] + "\" cannot be used as filename." + clrcodes.fg.white)
+        te2.world.saveWorldFile(loadedWorlds[cmd[1]]) #save world to textengine2/game/worlds
+        print(clrcodes.fg.green + "Saved world \"" + cmd[1] + "\" to worlds folder." + clrcodes.fg.white)
       else:
         print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
         
     elif cmd[0] == "load":
-      if len(cmd) > 1 and len(cmd) <= 2: #command only accepts two arguments 
-        try:
-          curWorld = te2.world.loadWorldFile(cmd[1]) #load world from textengine2/src/worlds/ 
-          
-          print(clrcodes.fg.green + "Loaded world \"" + cmd[1] + "\" from worlds folder." + clrcodes.fg.white)
-        except:
-          print(clrcodes.fg.red + "No world named \"" + cmd[1] + "\" saved." + clrcodes.fg.white)
+      if len(cmd) > 1 and len(cmd) <= 2: #command only accepts two arguments   
+        world = te2.world.loadWorldFile(cmd[1]) #load world from textengine2/game/worlds/ 
+        loadedWorlds[world.name] = world #add world to loadedWorlds
+        del world
+        print(clrcodes.fg.green + "Loaded world \"" + cmd[1] + "\" from worlds folder." + clrcodes.fg.white)
       else:
         print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
     
     elif cmd[0] == "del":
       if len(cmd) > 1 and len(cmd) <= 2: #command only accepts two arguments 
-        try:
-          te2.world.delWorldFile(cmd[1]) #load world from textengine2/src/worlds/
-          
-          print(clrcodes.fg.green + "Deleted world \"" + cmd[1] + "\" from worlds folder." + clrcodes.fg.white)
-        except:
-          print(clrcodes.fg.red + "No world named \"" + cmd[1] + "\" saved." + clrcodes.fg.white)
+        te2.world.delWorldFile(cmd[1]) #delete world from textengine2/game/worlds/
+        print(clrcodes.fg.green + "Deleted world \"" + cmd[1] + "\" from worlds folder." + clrcodes.fg.white)
+      else:
+        print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
+    
+    elif cmd[0] == "gen":
+      if len(cmd) > 1 and len(cmd) <= 2:
+        world = te2.world.World(cmd[1]) #generate new world
+        loadedWorlds[world.name] = world #add world to loadedWorlds
+        del world
+      else:
+        print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
+    
+    elif cmd[0] == "sel":
+      if len(cmd) > 1 and len(cmd) <= 2:
+        selectedWorld = cmd[1] #set current world
       else:
         print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
     
     elif cmd[0] == "help":
       if len(cmd) == 1:
-        print(clrcodes.fg.green +
-              "save <worldname>\n" +
-              "load <worldname>\n" +
-              "del <worldname>\n" +
-              "help" + clrcodes.fg.white)
+        print(clrcodes.fg.green,
+              "save <worldname>\n",
+              "\tsave world in loadedWorlds to folder \"worlds\"\n",
+              "load <worldname>\n",
+              "\tload world from folder \"worlds\" to loadedWorlds\n",
+              "del  <worldname>\n",
+              "\tdelete world from folder \"worlds\"\n",
+              "gen  <worldname>\n",
+              "\tgenerate new world, add it to loadedWorlds\n",
+              "sel  <worldname>\n",
+              "\tset selected world (in loadedWorlds)\n",
+              clrcodes.fg.white, sep="")
       else:
         print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
 
@@ -137,14 +147,15 @@ while True: #mainloop
       print(clrcodes.fg.red + "Invalid command." + clrcodes.fg.white)
   else: 
     print(clrcodes.fg.red + "No command entered." + clrcodes.fg.white)
-    
-  if curWorld != None:
-    print(clrcodes.fg.blue + "curWorld: " + curWorld.name + ", map:")
-    curWorld.print()
-    print("entity test:" + clrcodes.fg.white)
-    objprint(curWorld.getEntity(4, 2), True)
-
-
+  
+  print(clrcodes.fg.green,end="")
+  if loadedWorlds != {}:
+    print("\nloadedWorlds:")
+    print(loadedWorlds)
+  if selectedWorld != None:
+    print("\nselectedWorld: " + loadedWorlds[selectedWorld].name + ", map: ")
+    loadedWorlds[selectedWorld].print()
+  print(clrcodes.fg.white,end="")
 
 
 

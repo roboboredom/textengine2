@@ -1,7 +1,11 @@
-import copy, json, os, platform
+"""world class and save/load functions"""
+import copy, json, os, platform, inspect
 
 class World:
-  
+  """
+  class for a world, containing entities and tiles
+  set shell=True to skip __init__ (no instance vars)
+  """
   xlen_max = 32 #world size caps
   ylen_max = 32
   
@@ -26,7 +30,8 @@ class World:
       self.ent_id_count = 0 #each entity has a unique id that stays the same between loads
       self.entities = []
 
-  def print(self): #called when object treated as a string
+  def print(self):
+    """print world to console"""
     for y in self.array:
       for x in y:
         if isinstance(x, int):
@@ -35,15 +40,15 @@ class World:
           print(x, sep="", end="")
       print("\n", end="")
 
-  #inserts COPY of input object at it"s stored coords.
   def insertCopy(self, obj):
+    """insert copy of object @ it's stored coords"""
     clone = copy.deepcopy(obj) #copy it first, so we don"t modify the input obj (reference)
     self.array[clone.y][clone.x] = self.ent_id_count
     self.ent_id_count += 1
     self.entities.append(clone)
   
-  #inserts COPY of input object at specific coords
   def insertCopyAt(self, obj, x, y):
+    """insert copy of object @ coords"""
     clone = copy.deepcopy(obj)
     clone.x = x
     clone.y = y
@@ -51,21 +56,22 @@ class World:
     self.ent_id_count += 1
     self.entities.append(clone)
 
-  #returns value at coords; better than just accessing self.array[][] - coords are backwards due to it"s nesting
-  def getVal(self, x, y):
+  def getSymbol(self, x, y): #better than just accessing self.array[][] - coords are backwards due to it's nesting
+    """returns symbol @ coords"""
     return self.array[y][x]
   
-  #returns entity instance at coords
   def getEntity(self, x, y):
-    return self.entities[self.getVal(x, y)]
+    """returns entity instance @ coords"""
+    return self.entities[self.getSymbol(x, y)]
 
-def saveWorldFile(world): #save world array to file
+def saveWorldFile(world):
+  """save a world to a world file"""
   clone = copy.deepcopy(world) #copy world so we can modify it"s values just for this function
   
   if platform.system() == "Windows": #diff os filepath formats
-    file = open(os.getcwd() + "\\src\\worlds\\" + clone.name + ".json", "w") #create file if not exist, write only
+    file = open(os.getcwd() + "\\game\\worlds\\" + clone.name + ".json", "w") #create file if not exist, write only
   elif platform.system() == "Linux":
-    file = open(os.getcwd() + "/src/worlds/" + clone.name + ".json", "w")
+    file = open(os.getcwd() + "/game/worlds/" + clone.name + ".json", "w")
 
   newlist = []
   for obj in clone.entities: #change objects in list to json
@@ -73,14 +79,16 @@ def saveWorldFile(world): #save world array to file
   clone.entities = newlist
 
   file.write(json.dumps(clone.__dict__, indent="\t"))
+  
   del clone #we dont need our copy anymore, delete it
   file.close()
 
-def loadWorldFile(name): #load world array from file
+def loadWorldFile(name):
+  """load a world file, return it"""
   if platform.system() == "Windows": #diff os filepath formats
-    file = open(os.getcwd() + "\\src\\worlds\\" + name + ".json", "r") #read only
+    file = open(os.getcwd() + "\\game\\worlds\\" + name + ".json", "r") #read only
   elif platform.system() == "Linux":
-    file = open(os.getcwd() + "/src/worlds/" + name + ".json", "r")
+    file = open(os.getcwd() + "/game/worlds/" + name + ".json", "r")
   
   shell = World(shell=True) #new World instance without instance vars
 
@@ -89,21 +97,22 @@ def loadWorldFile(name): #load world array from file
   
   newlist = []
   for obj in shell.entities: #change objects in list to instances
-    id = json.loads(obj[0]) #new instance of classname
-    constructor = globals()[id]
-    instance = constructor(shell=True)
+    classname = json.loads(obj[0]) #loaded class must be BaseEntity or inherit from BaseEntity
+    
+    instance = inspect.stack()[1][0].f_globals[classname](shell=True) #get globals of main.py
+    
     instance.__dict__= json.loads(obj[1])
+
     newlist.append(instance)
     del instance
-    del constructor
   shell.entities = newlist
   
   file.close()
   return shell
 
-def delWorldFile(name): #delete world file
+def delWorldFile(name):
+  """delete a world file"""
   if platform.system() == "Windows": #diff os filepath formats
-    os.remove(os.getcwd() + "\\src\\worlds\\" + name + ".json") #delete file
+    os.remove(os.getcwd() + "\\game\\worlds\\" + name + ".json") #delete file
   elif platform.system() == "Linux":
-    os.remove(os.getcwd() + "/src/worlds/" + name + ".json")
-  
+    os.remove(os.getcwd() + "/game/worlds/" + name + ".json")
