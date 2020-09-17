@@ -69,9 +69,9 @@ def saveWorldFile(world):
   clone = copy.deepcopy(world) #copy world so we can modify it"s values just for this function
   
   if platform.system() == "Windows": #diff os filepath formats
-    file = open(os.getcwd() + "\\game\\worlds\\" + clone.name + ".json", "w") #create file if not exist, write only
+    file = open(os.getcwd() + "\\game\\worlds\\" + clone.name + ".te2wrld", "w") #create file if not exist, write only
   elif platform.system() == "Linux":
-    file = open(os.getcwd() + "/game/worlds/" + clone.name + ".json", "w")
+    file = open(os.getcwd() + "/game/worlds/" + clone.name + ".te2wrld", "w")
 
   newlist = []
   for obj in clone.entities: #change objects in list to json
@@ -86,9 +86,9 @@ def saveWorldFile(world):
 def loadWorldFile(name):
   """load a world file, return it"""
   if platform.system() == "Windows": #diff os filepath formats
-    file = open(os.getcwd() + "\\game\\worlds\\" + name + ".json", "r") #read only
+    file = open(os.getcwd() + "\\game\\worlds\\" + name + ".te2wrld", "r") #read only
   elif platform.system() == "Linux":
-    file = open(os.getcwd() + "/game/worlds/" + name + ".json", "r")
+    file = open(os.getcwd() + "/game/worlds/" + name + ".te2wrld", "r")
   
   shell = World(shell=True) #new World instance without instance vars
 
@@ -113,6 +113,6 @@ def loadWorldFile(name):
 def delWorldFile(name):
   """delete a world file"""
   if platform.system() == "Windows": #diff os filepath formats
-    os.remove(os.getcwd() + "\\game\\worlds\\" + name + ".json") #delete file
+    os.remove(os.getcwd() + "\\game\\worlds\\" + name + ".te2wrld") #delete file
   elif platform.system() == "Linux":
-    os.remove(os.getcwd() + "/game/worlds/" + name + ".json")
+    os.remove(os.getcwd() + "/game/worlds/" + name + ".te2wrld")
