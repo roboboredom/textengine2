@@ -1,7 +1,68 @@
-import platform
+import platform, time
 import te2.world
+import tkinter as tk
+from tkinter import filedialog
 
 # ============================ CLASS DEFINITION =================================
+class Interface(tk.Tk):
+  def __gameCommand(self, command):
+    self.commandQuene.append(command)
+  
+  def __loadWorldCommand(self):
+    fileName = filedialog.askopenfilename(
+      initialdir = "D:\\GitHub\\python\\textengine2\\game\\worlds\\",
+      title = "Select a world file to open.",
+      filetypes = (("textengine2 world file","*.te2wrld"),("all files","*.*"))
+      )
+    self.__gameCommand("load " + fileName)
+  
+  def __init__(self):
+    tk.Tk.__init__(self)
+    
+    self.commandQuene = []
+
+    #tkinter instance vars
+    self.wm_iconphoto(False, tk.PhotoImage(file="D:\\GitHub\\python\\textengine2\\game\\assets\\icon.png")) #set icon
+    self.wm_title("Textengine2")
+    self.resizable(False, False) #block resizing
+    self.lift() #move window above all others
+    
+    #Main menu for window
+    self.mainMenu = tk.Menu(master=self)
+    self.config(menu=self.mainMenu)
+    
+    #Main menu - Help
+    self.mainMenu.add_command(label="Help", command=self.__gameCommand("help"))
+
+    #Main menu - File dropdown menu
+    self.fileMenu = tk.Menu(self.mainMenu, tearoff=0)
+
+    #self.fileMenu.add_command(label="New world", command=self.)
+    self.fileMenu.add_command(label="Open world", command=self.__loadWorldCommand)
+    #self.fileMenu.add_command(label="Save world", command=self.)
+    self.fileMenu.add_separator()
+    self.fileMenu.add_command(label="Quit", command=self.__gameCommand("quit"))
+
+    self.mainMenu.add_cascade(label="File", menu=self.fileMenu)
+    
+    #Frame container for canvas
+    self.mapFrame = tk.Frame(
+      master=self,
+      width=640, 
+      height=480,
+      borderwidth=10,
+      relief="ridge",
+      background="blue"
+      )
+    self.mapFrame.pack()
+
+    #Canvas for drawing map
+    self.mapCanvas = tk.Canvas(
+      master=self.mapFrame,
+      background="black"
+      )
+    self.mapCanvas.pack()
+
 class clrcodes:
   """ascii color escape codes"""
   class fg:
@@ -73,16 +134,93 @@ def objPrint(obj, compact=False):
   print(clrcodes.fg.white, end="")
 
 # ============================ MAIN ============================================
-platformCheck()
-print(clrcodes.fg.green, ">>>>>> textengine2 || by dawson gray <<<<<< \nType \"help\" for a list of commands.\n", clrcodes.fg.white, sep="")
-
-#template instances
-t_rock = BaseEntity("Rock", "#")
-t_bush = BaseEntity("Bush", "%")
+#platformCheck()
+#print(clrcodes.fg.green, ">>>>>> textengine2 || by dawson gray <<<<<< \nType \"help\" for a list of commands.\n", clrcodes.fg.white, sep="")
 
 loadedWorlds = {}
 selectedWorld = None #current selected world in loadedWorlds
 
+ui = Interface() #initalize game window
+
+doLoop = True
+while doLoop:
+  try: ui.update()
+  except: doLoop = False
+
+  if len(ui.commandQuene) != 0: #if quene not empty
+    print(ui.commandQuene)
+    ui.commandQuene = [] #reset quene
+
+print("window closed via [x]")
+
+
+
+
+"""
+def commandLoop():
+  if ui.commandQuene != []:
+    for cmd in ui.commandQuene:
+      print(cmd)
+      cmd = cmd.split() #split cmd by spaces into list of words
+
+      if cmd[0] == "save":
+        if len(cmd) > 1 and len(cmd) <= 2: #command only accepts 2 args
+          te2.world.saveWorldFile(loadedWorlds[cmd[1]]) #save world to textengine2/game/worlds
+          print(clrcodes.fg.green + "Saved world \"" + cmd[1] + "\" to worlds folder." + clrcodes.fg.white)
+        else:
+          print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
+          
+      elif cmd[0] == "load":
+        if len(cmd) > 1 and len(cmd) <= 2: #command only accepts two arguments   
+          world = te2.world.loadWorldFile(cmd[1]) #load world from textengine2/game/worlds/ 
+          loadedWorlds[world.name] = world #add world to loadedWorlds
+          del world
+          print(clrcodes.fg.green + "Loaded world \"" + cmd[1] + "\" from worlds folder." + clrcodes.fg.white)
+        else:
+          print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
+      
+      elif cmd[0] == "del":
+        if len(cmd) > 1 and len(cmd) <= 2: #command only accepts two arguments 
+          te2.world.delWorldFile(cmd[1]) #delete world from textengine2/game/worlds/
+          print(clrcodes.fg.green + "Deleted world \"" + cmd[1] + "\" from worlds folder." + clrcodes.fg.white)
+        else:
+          print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
+      
+      elif cmd[0] == "gen":
+        if len(cmd) > 1 and len(cmd) <= 2:
+          world = te2.world.World(cmd[1]) #generate new world
+          loadedWorlds[world.name] = world #add world to loadedWorlds
+          del world
+        else:
+          print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
+      
+      elif cmd[0] == "sel":
+        if len(cmd) > 1 and len(cmd) <= 2:
+          selectedWorld = cmd[1] #set current world
+        else:
+          print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
+      
+      elif cmd[0] == "help":
+        if len(cmd) == 1:
+          print(clrcodes.fg.green,
+                "save <worldname>\n",
+                "\tsave world in loadedWorlds to folder \"worlds\"\n",
+                "load <worldname>\n",
+                "\tload world from folder \"worlds\" to loadedWorlds\n",
+                "del  <worldname>\n",
+                "\tdelete world from folder \"worlds\"\n",
+                "gen  <worldname>\n",
+                "\tgenerate new world, add it to loadedWorlds\n",
+                "sel  <worldname>\n",
+                "\tset selected world (in loadedWorlds)\n",
+                clrcodes.fg.white, sep="")
+    
+    ui.commandQuene = []
+
+ui.after(0, commandLoop)
+ui.focus_set() #give game window focus
+ui.mainloop() #start window loop, continue past this when it's closed
+"""
 while True: #mainloop
   cmd = input("> ")
 
@@ -156,8 +294,6 @@ while True: #mainloop
     print("\nselectedWorld: " + loadedWorlds[selectedWorld].name + ", map: ")
     loadedWorlds[selectedWorld].print()
   print(clrcodes.fg.white,end="")
-
-
 
 
 
