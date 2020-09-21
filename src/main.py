@@ -1,26 +1,27 @@
-import platform, os
-import te2.world #world class
-import tkinter as tk #tkinter gui library
-from tkinter import filedialog
+import platform, os, time
 from functools import partial
+import te2.world #world class
+import tkinter #tkinter gui library
+from tkinter import filedialog
+import turtle #turtle graphics
 
 # ============================ CLASS DEFINITIONS =================================
-class GUI(tk.Tk):  
+class GUI(tkinter.Tk):  
   def __init__(self):
-    tk.Tk.__init__(self) #call the __init__ of the class we inherited from first
+    tkinter.Tk.__init__(self) #call the __init__ of the class we inherited from first
 
     #tkinter instance vars
-    self.wm_iconphoto(False, tk.PhotoImage(file="D:\\GitHub\\python\\textengine2\\game\\assets\\icon.png")) #set icon
+    self.wm_iconphoto(False, tkinter.PhotoImage(file=os.getcwd()+"\\game\\assets\\icon.png")) #set icon
     self.wm_title("textengine2")
     self.resizable(False, False)
     self.lift() #move window above all others
 
     #mainmenu
-    self.mainMenu = tk.Menu(master=self)
+    self.mainMenu = tkinter.Menu(master=self)
     self.config(menu=self.mainMenu) #set default menu to mainMenu
     
     #mainmenu - file submenu - open world, quit
-    self.fileMenu = tk.Menu(
+    self.fileMenu = tkinter.Menu(
       self.mainMenu, 
       tearoff=0,
       background="#000000",
@@ -37,7 +38,7 @@ class GUI(tk.Tk):
     self.mainMenu.add_command(label="Help", command=partial(self.__setCommand, "help"))
 
     #frame container for canvas
-    self.mapFrame = tk.Frame(
+    self.mapFrame = tkinter.Frame(
       master=self,
       width=640, 
       height=480,
@@ -47,12 +48,21 @@ class GUI(tk.Tk):
       )
     self.mapFrame.pack()
 
-    #canvas for drawing map
-    self.mapCanvas = tk.Canvas(
+    #canvas for turtle
+    self.mapCanvas = tkinter.Canvas(
       master=self.mapFrame,
       background="black"
       )
     self.mapCanvas.pack()
+
+    #turtle for drawing to canvas
+    self.mapPen = turtle.RawTurtle(canvas=self.mapCanvas) #assign turtle to canvas for rendering graphics
+    self.mapPen.speed(0) #disable turtle animation
+    self.mapPen.shape('square')
+    self.mapPen.hideturtle()
+    self.mapPen.screen.tracer(0, 0) #disable turtle screen refresh
+    self.mapPen.color("white") #set turtle color
+    self.mapPen.screen.bgcolor("black") #set turtle screen color
 
     #non-tkinter instance vars
     self.__nextCommand = None #prefix private vars w/ "__"
@@ -98,14 +108,14 @@ class Logger:
   """Logger class, better console output. Do not use as instance!"""
   
   colorcodes = { #ansi color codes
-    "black"   : "\u001b[30m",
-    "red"     : "\u001b[31m",
-    "green"   : "\u001b[32m",
-    "yellow"  : "\u001b[33m",
-    "blue"    : "\u001b[34m",
-    "magenta" : "\u001b[35m",
-    "cyan"    : "\u001b[36m",
-    "white"   : "\u001b[37m"
+    "black"   : "\u001b[1m\u001b[30m",
+    "red"     : "\u001b[1m\u001b[31m",
+    "green"   : "\u001b[1m\u001b[32m",
+    "yellow"  : "\u001b[1m\u001b[33m",
+    "blue"    : "\u001b[1m\u001b[34m",
+    "magenta" : "\u001b[1m\u001b[35m",
+    "cyan"    : "\u001b[1m\u001b[36m",
+    "white"   : "\u001b[1m\u001b[37m"
   }
 
   @staticmethod
@@ -251,7 +261,6 @@ loadedWorlds = {}
 selectedWorld = None #current selected world in loadedWorlds
 
 platformCheck()
-
 if platform.system() == "Windows":
   gui = GUI() #initalize game gui
   gui.startLoop() #start gui loop, stop on this line until gui killed
