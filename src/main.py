@@ -1,6 +1,6 @@
 import platform, os
-import te2.world
-import tkinter as tk
+import te2.world #world class
+import tkinter as tk #tkinter gui library
 from tkinter import filedialog
 from functools import partial
 
@@ -33,9 +33,8 @@ class GUI(tk.Tk):
     self.fileMenu.add_command(label="Quit", command=partial(self.__setCommand, "quit"))
     self.mainMenu.add_cascade(label="File", menu=self.fileMenu)
     
-    #mainmenu - help, free lober
+    #mainmenu - help
     self.mainMenu.add_command(label="Help", command=partial(self.__setCommand, "help"))
-    self.mainMenu.add_command(label="Free Lober",command=partial(self.__setCommand, "lober"))
 
     #frame container for canvas
     self.mapFrame = tk.Frame(
@@ -60,7 +59,7 @@ class GUI(tk.Tk):
 
   #public functions
   def startLoop(self): #mainloop, function calls itself until told to stop
-    print(clrcodes.fg.red + "Starting GUI loop." + clrcodes.fg.white)
+    Logger.log("Starting GUI loop.", color="red")
     self.focus_set() #give game window focus
     while True:
       if self.__nextCommand != "quit": #special interface only command, exits interface
@@ -71,11 +70,11 @@ class GUI(tk.Tk):
         try: #do tkinter processes
           self.update()
         except: #if the gui closed with close button
-          print(clrcodes.fg.red + "GUI closed. Starting console loop." + clrcodes.fg.white)
+          Logger.log("GUI closed. Starting console loop.", color="red")
           break
       
       else:
-        print(clrcodes.fg.red + "GUI closed by File > Quit. Starting console loop." + clrcodes.fg.white)
+        Logger.log("GUI closed by File > Quit. Starting console loop.", color="red")
         self.destroy()
         break
   
@@ -95,27 +94,40 @@ class GUI(tk.Tk):
     filename = path[len(path) - 1].split(".")[0] #get just filename
     self.__setCommand("load " + filename)
 
-class clrcodes:
-  """ascii color escape codes"""
-  class fg:
-    black   = "\u001b[30m"
-    red     = "\u001b[31m"
-    green   = "\u001b[32m"
-    yellow  = "\u001b[33m"
-    blue    = "\u001b[34m"
-    magenta = "\u001b[35m"
-    cyan    = "\u001b[36m"
-    white   = "\u001b[37m"
-  class bg:
-    black   = "\033[40m"
-    red     = "\033[41m"
-    green   = "\033[42m"
-    orange  = "\033[43m"
-    blue    = "\033[44m"
-    purple  = "\033[45m"
-    cyan    = "\033[46m"
-    grey    = "\033[47m"
+class Logger:
+  """Logger class, better console output. Do not use as instance!"""
+  
+  colorcodes = { #ansi color codes
+    "black"   : "\u001b[30m",
+    "red"     : "\u001b[31m",
+    "green"   : "\u001b[32m",
+    "yellow"  : "\u001b[33m",
+    "blue"    : "\u001b[34m",
+    "magenta" : "\u001b[35m",
+    "cyan"    : "\u001b[36m",
+    "white"   : "\u001b[37m"
+  }
 
+  @staticmethod
+  def log(*args, color="white", sep="", end="\n"):
+    """
+    log any number of objects to console
+    
+    *args: object(s) to log
+    color= color of text, defaults to "white"
+    sep= string to insert between objects, defaults to ""
+    end= string to insert at end, defaults to "\\n"
+    """
+    print(Logger.colorcodes[color], end="")
+    
+    for i in range(0, len(args)):
+      if i == len(args) - 1:
+        print(args[i], end=end)
+      else:
+        print(args[i], end=sep)
+
+    print(Logger.colorcodes["white"], end="")
+  
 class BaseEntity: #base class for any entity in the world 
   def __init__(self, name=None, symbol=None, x=0, y=0, shell=False): #called on instance creation
     if not shell:
@@ -132,26 +144,26 @@ def processCommand(cmd):
   
   if cmd[0] == "save":
     if len(cmd) > 1 and len(cmd) <= 2: #command only accepts 2 args
-      te2.world.saveWorldFile(loadedWorlds[cmd[1]]) #save world to textengine2/game/worlds
-      print(clrcodes.fg.green + "Saved world \"" + cmd[1] + "\" to worlds folder." + clrcodes.fg.white)
+      te2.world.World.saveWorldFile(loadedWorlds[cmd[1]]) #save world to textengine2/game/worlds
+      Logger.log("Saved world \"", cmd[1], "\" to worlds folder.", color="green")
     else:
-      print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
+      Logger.log("Invalid amount of arguments.", color="red")
       
   elif cmd[0] == "load":
     if len(cmd) > 1 and len(cmd) <= 2: #command only accepts two arguments   
-      world = te2.world.loadWorldFile(cmd[1]) #load world from textengine2/game/worlds/ 
+      world = te2.world.World.loadWorldFile(cmd[1]) #load world from textengine2/game/worlds/ 
       loadedWorlds[world.name] = world #add world to loadedWorlds
       del world
-      print(clrcodes.fg.green + "Loaded world \"" + cmd[1] + "\" from worlds folder." + clrcodes.fg.white)
+      Logger.log("Loaded world \"", cmd[1], "\" from worlds folder.", color="green")
     else:
-      print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
+      Logger.log("Invalid amount of arguments.", color="red")
   
   elif cmd[0] == "del":
     if len(cmd) > 1 and len(cmd) <= 2: #command only accepts two arguments 
-      te2.world.delWorldFile(cmd[1]) #delete world from textengine2/game/worlds/
-      print(clrcodes.fg.green + "Deleted world \"" + cmd[1] + "\" from worlds folder." + clrcodes.fg.white)
+      te2.world.World.delWorldFile(cmd[1]) #delete world from textengine2/game/worlds/
+      Logger.log("Deleted world \"", cmd[1], "\" from worlds folder.", color="green")
     else:
-      print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
+      Logger.log("Invalid amount of arguments.", color="red")
   
   elif cmd[0] == "gen":
     if len(cmd) > 1 and len(cmd) <= 2:
@@ -159,67 +171,57 @@ def processCommand(cmd):
       loadedWorlds[world.name] = world #add world to loadedWorlds
       del world
     else:
-      print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
+      Logger.log("Invalid amount of arguments.", color="red")
   
   elif cmd[0] == "sel":
     if len(cmd) > 1 and len(cmd) <= 2:
       selectedWorld = cmd[1] #set current world
     else:
-      print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
+      Logger.log("Invalid amount of arguments.", color="red")
   
   elif cmd[0] == "help":
     if len(cmd) == 1:
-      print(clrcodes.fg.green,
-            "\nhelp\n",
-            "\tshows this text\n",
-            "save <worldname>\n",
-            "\tsave world in loadedWorlds to folder \"worlds\"\n",
-            "load <worldname>\n",
-            "\tload world from folder \"worlds\" to loadedWorlds\n",
-            "del  <worldname>\n",
-            "\tdelete world from folder \"worlds\"\n",
-            "gen  <worldname>\n",
-            "\tgenerate new world, add it to loadedWorlds\n",
-            "sel  <worldname>\n",
-            "\tset selected world (in loadedWorlds)\n",
-            "lober\n",
-            "\twhat if we ate lober...under that tree? jk! ...unless?!?\n",
-            clrcodes.fg.white, sep="")
+      Logger.log(
+        "\nhelp\n",
+        "\tshows this text\n",
+        "save <worldname>\n",
+        "\tsave world in loadedWorlds to folder \"worlds\"\n",
+        "load <worldname>\n",
+        "\tload world from folder \"worlds\" to loadedWorlds\n",
+        "del  <worldname>\n",
+        "\tdelete world from folder \"worlds\"\n",
+        "gen  <worldname>\n",
+        "\tgenerate new world, add it to loadedWorlds\n",
+        "sel  <worldname>\n",
+        "\tset selected world (in loadedWorlds)\n",
+        color="green", sep=""
+      )
     else:
-      print(clrcodes.fg.red + "Invalid amount of arguments." + clrcodes.fg.white)
-
-  elif cmd[0] == "lober": #flash that sexy thicc lober for the user
-    if len(cmd) == 1:
-      print("{1}d{0}u{1}m{0}m{1}y t{0}h{1}i{0}c{1}c{0} {1}r{0}e{1}d{0} {1}l{0}o{1}b{0}e{1}r{0}".format(clrcodes.fg.white, clrcodes.fg.red))
-
-  else:
-    print(clrcodes.fg.red + "[Error] No command \"" + cmd[0] + "\"" + clrcodes.fg.white)
+      Logger.log("Invalid amount of arguments.", color="red")
   
-  print(clrcodes.fg.green,end="")
+  else:
+    Logger.log("No command \"", cmd[0], "\".", color="red")
+  
   if selectedWorld != None:
-    print(clrcodes.fg.green,end="")
-    print("\nloadedWorlds:")
-    print(loadedWorlds.keys())
-    print("\nselectedWorld: " + loadedWorlds[selectedWorld].name + ", map: ")
+    Logger.log("\nselectedWorld: ", loadedWorlds[selectedWorld].name)
     loadedWorlds[selectedWorld].print()
-    print(clrcodes.fg.white)
   
 def platformCheck(): 
-  #check if system compatible, log info
+  """check if system compatible, log info"""
   s = platform.system()
   if s == "Linux": # linux
-    print(clrcodes.fg.blue, "Running on Linux. [SUPPORTED]", clrcodes.fg.white, sep = "")
+    Logger.log("Running on Linux. [SUPPORTED]", color="green")
   elif s == "Windows": # windows
-    print(clrcodes.fg.blue, "Running on Windows. [SUPPORTED]", clrcodes.fg.white, sep = "")
+    Logger.log("Running on Windows. [SUPPORTED]", color="green")
   else: # other os
-    print(clrcodes.fg.red, "\tRunning on unknown OS. [NOT SUPPORTED] Things may not work!", clrcodes.fg.white, sep = "")
+    Logger.log("Running on unknown OS. [NOT SUPPORTED] Things may not work!", color="red")
 
 def objPrint(obj, compact=False):
   """
   prints a json-style snippet containing all instance vars of an obj
   set compact=True for no newlines                                   
   """
-  print(clrcodes.fg.blue, end="")
+  print(Logger.colorcodes["magenta"], end="")
 
   if compact:
     print(obj.__class__.__name__," 0x",id(obj)," {",sep="",end="")
@@ -242,20 +244,26 @@ def objPrint(obj, compact=False):
           print("\"",key,"\":\"",obj.__dict__[key],"\",",sep="")
       index += 1
     
-  print(clrcodes.fg.white, end="")
+  print(Logger.colorcodes["white"], end="")
 
 # ============================ MAIN ============================================
 loadedWorlds = {}
 selectedWorld = None #current selected world in loadedWorlds
 
-gui = GUI() #initalize game gui
-gui.startLoop() #start gui loop, stop on this line until gui killed
+platformCheck()
+
+if platform.system() == "Windows":
+  gui = GUI() #initalize game gui
+  gui.startLoop() #start gui loop, stop on this line until gui killed
 
 #console loop, alternative to gui loop
-print(clrcodes.fg.green + ">>>> textengine2, by dawson gray <<<< \nType \"help\" for a list of commands." + clrcodes.fg.white)
+Logger.log(
+  ">>>> textengine2, by dawson gray <<<<","Type \"help\" for a list of commands.", 
+  color="green", sep="\n", end="\n\n"
+)
 while True:
   cmd = input("> ")
   if cmd != "" and cmd.isspace() == False: #check if cmd not just whitespace or empty
     processCommand(cmd)
   else: 
-    print(clrcodes.fg.red + "Nothing entered." + clrcodes.fg.white)
+    Logger.log("Nothing entered!", color="red")

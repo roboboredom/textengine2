@@ -21,9 +21,9 @@ class World:
       self.ylen = ylen
       
       self.array = [] 
-      for y in range(0, self.ylen): #create default array of "." from dimensions
+      for _y in range(0, self.ylen): #create default array of "." from dimensions
         row = []
-        for x in range(0, self.xlen):
+        for _x in range(0, self.xlen):
           row.append(".")
         self.array.append(row)
       
@@ -64,55 +64,58 @@ class World:
     """returns entity instance @ coords"""
     return self.entities[self.getSymbol(x, y)]
 
-def saveWorldFile(world):
-  """save a world to a world file"""
-  clone = copy.deepcopy(world) #copy world so we can modify it"s values just for this function
-  
-  if platform.system() == "Windows": #diff os filepath formats
-    file = open(os.getcwd() + "\\game\\worlds\\" + clone.name + ".te2wrld", "w") #create file if not exist, write only
-  elif platform.system() == "Linux":
-    file = open(os.getcwd() + "/game/worlds/" + clone.name + ".te2wrld", "w")
-
-  newlist = []
-  for obj in clone.entities: #change objects in list to json
-    newlist.append([json.dumps(obj.__class__.__name__), json.dumps(obj.__dict__)])
-  clone.entities = newlist
-
-  file.write(json.dumps(clone.__dict__, indent="\t"))
-  
-  del clone #we dont need our copy anymore, delete it
-  file.close()
-
-def loadWorldFile(name):
-  """load a world file, return it"""
-  if platform.system() == "Windows": #diff os filepath formats
-    file = open(os.getcwd() + "\\game\\worlds\\" + name + ".te2wrld", "r") #read only
-  elif platform.system() == "Linux":
-    file = open(os.getcwd() + "/game/worlds/" + name + ".te2wrld", "r")
-  
-  shell = World(shell=True) #new World instance without instance vars
-
-  with file as f: #load world json
-    shell.__dict__ = json.load(f)
-  
-  newlist = []
-  for obj in shell.entities: #change objects in list to instances
-    classname = json.loads(obj[0]) #loaded class must be BaseEntity or inherit from BaseEntity
+  @staticmethod
+  def saveWorldFile(world):
+    """save a world to a world file"""
+    clone = copy.deepcopy(world) #copy world so we can modify it"s values just for this function
     
-    instance = inspect.stack()[1][0].f_globals[classname](shell=True) #get globals of main.py
+    if platform.system() == "Windows": #diff os filepath formats
+      file = open(os.getcwd() + "\\game\\worlds\\" + clone.name + ".te2wrld", "w") #create file if not exist, write only
+    elif platform.system() == "Linux":
+      file = open(os.getcwd() + "/game/worlds/" + clone.name + ".te2wrld", "w")
+
+    newlist = []
+    for obj in clone.entities: #change objects in list to json
+      newlist.append([json.dumps(obj.__class__.__name__), json.dumps(obj.__dict__)])
+    clone.entities = newlist
+
+    file.write(json.dumps(clone.__dict__, indent="\t"))
     
-    instance.__dict__= json.loads(obj[1])
+    del clone #we dont need our copy anymore, delete it
+    file.close()
 
-    newlist.append(instance)
-    del instance
-  shell.entities = newlist
-  
-  file.close()
-  return shell
+  @staticmethod
+  def loadWorldFile(name):
+    """load a world file, return it"""
+    if platform.system() == "Windows": #diff os filepath formats
+      file = open(os.getcwd() + "\\game\\worlds\\" + name + ".te2wrld", "r") #read only
+    elif platform.system() == "Linux":
+      file = open(os.getcwd() + "/game/worlds/" + name + ".te2wrld", "r")
+    
+    shell = World(shell=True) #new World instance without instance vars
 
-def delWorldFile(name):
-  """delete a world file"""
-  if platform.system() == "Windows": #diff os filepath formats
-    os.remove(os.getcwd() + "\\game\\worlds\\" + name + ".te2wrld") #delete file
-  elif platform.system() == "Linux":
-    os.remove(os.getcwd() + "/game/worlds/" + name + ".te2wrld")
+    with file as f: #load world json
+      shell.__dict__ = json.load(f)
+    
+    newlist = []
+    for obj in shell.entities: #change objects in list to instances
+      classname = json.loads(obj[0]) #loaded class must be BaseEntity or inherit from BaseEntity
+      
+      instance = inspect.stack()[1][0].f_globals[classname](shell=True) #get globals of main.py
+      
+      instance.__dict__= json.loads(obj[1])
+
+      newlist.append(instance)
+      del instance
+    shell.entities = newlist
+    
+    file.close()
+    return shell
+
+  @staticmethod
+  def delWorldFile(name):
+    """delete a world file"""
+    if platform.system() == "Windows": #diff os filepath formats
+      os.remove(os.getcwd() + "\\game\\worlds\\" + name + ".te2wrld") #delete file
+    elif platform.system() == "Linux":
+      os.remove(os.getcwd() + "/game/worlds/" + name + ".te2wrld")
