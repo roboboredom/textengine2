@@ -5,11 +5,19 @@ import tkinter #tkinter gui library
 from tkinter import filedialog
 import turtle #turtle graphics
 
-# ============================ CLASS DEFINITIONS =================================
-class GUI(tkinter.Tk):  
-  def __init__(self):
+# ============================ CLASSES =========================================
+class GUI(tkinter.Tk):
+  """
+  GUI class, tkinter-based gui for controlling a game session.
+  """
+  def __init__(self, session):
+    """session: game session to control"""
     tkinter.Tk.__init__(self) #call the __init__ of the class we inherited from first
-
+    
+    #non-tkinter instance vars
+    self.session = session #game session to control
+    self.__nextCommand = None #prefix private vars w/ "__"
+    
     #tkinter instance vars
     self.wm_iconphoto(False, tkinter.PhotoImage(file=os.getcwd()+"\\game\\assets\\icon.png")) #set icon
     self.wm_title("textengine2")
@@ -64,9 +72,6 @@ class GUI(tkinter.Tk):
     self.mapPen.color("white") #set turtle color
     self.mapPen.screen.bgcolor("black") #set turtle screen color
 
-    #non-tkinter instance vars
-    self.__nextCommand = None #prefix private vars w/ "__"
-
   #public functions
   def startLoop(self): #mainloop, function calls itself until told to stop
     Logger.log("Starting GUI loop.", color="red")
@@ -74,8 +79,10 @@ class GUI(tkinter.Tk):
     while True:
       if self.__nextCommand != "quit": #special interface only command, exits interface
         if self.__nextCommand != None:
-          processCommand(self.__nextCommand) #do stuff with command, then proceed
+          self.session.runCommand(self.__nextCommand) #do stuff with command, then proceed
           self.__nextCommand = None #reset for next loop
+          
+          self.__drawWorld()
         
         try: #do tkinter processes
           self.update()
@@ -89,6 +96,9 @@ class GUI(tkinter.Tk):
         break
   
   #private functions
+  def __drawWorld(self):
+    pass
+
   def __setCommand(self, command): 
     self.__nextCommand = command
   
@@ -138,7 +148,8 @@ class Logger:
 
     print(Logger.colorcodes["white"], end="")
   
-class BaseEntity: #base class for any entity in the world 
+class BaseEntity: 
+  """base class for any entity in the world"""
   def __init__(self, name=None, symbol=None, x=0, y=0, shell=False): #called on instance creation
     if not shell:
       self.name = name
@@ -146,76 +157,84 @@ class BaseEntity: #base class for any entity in the world
       self.x = x
       self.y = y
 
-# ============================ FUNCTION DEFINITIONS ============================
-def processCommand(cmd):
-  global loadedWorlds, selectedWorld
+class Session:
+  """
+  Session class, contains data for a game session,
+  and has methods for manipulating that data.
+  """
+  def __init__(self):
+    self.loadedWorlds = {}
+    self.selectedWorld = None #current selected world in loadedWorlds
+  
+  def runCommand(self, cmd):
+    """run a session command"""
+    cmd = cmd.split(" ") #split cmd into pieces by spaces
+    
+    if cmd[0] == "save":
+      if len(cmd) > 1 and len(cmd) <= 2: #command only accepts 2 args
+        te2.world.World.saveWorldFile(self.loadedWorlds[cmd[1]]) #save world to textengine2/game/worlds
+        Logger.log("Saved world \"", cmd[1], "\" to worlds folder.", color="green")
+      else:
+        Logger.log("Invalid amount of arguments.", color="red")
+        
+    elif cmd[0] == "load":
+      if len(cmd) > 1 and len(cmd) <= 2: #command only accepts two arguments   
+        world = te2.world.World.loadWorldFile(cmd[1]) #load world from textengine2/game/worlds/ 
+        self.loadedWorlds[world.name] = world #add world to loadedWorlds
+        del world
+        Logger.log("Loaded world \"", cmd[1], "\" from worlds folder.", color="green")
+      else:
+        Logger.log("Invalid amount of arguments.", color="red")
+    
+    elif cmd[0] == "del":
+      if len(cmd) > 1 and len(cmd) <= 2: #command only accepts two arguments 
+        te2.world.World.delWorldFile(cmd[1]) #delete world from textengine2/game/worlds/
+        Logger.log("Deleted world \"", cmd[1], "\" from worlds folder.", color="green")
+      else:
+        Logger.log("Invalid amount of arguments.", color="red")
+    
+    elif cmd[0] == "gen":
+      if len(cmd) > 1 and len(cmd) <= 2:
+        world = te2.world.World(cmd[1]) #generate new world
+        self.loadedWorlds[world.name] = world #add world to loadedWorlds
+        del world
+      else:
+        Logger.log("Invalid amount of arguments.", color="red")
+    
+    elif cmd[0] == "sel":
+      if len(cmd) > 1 and len(cmd) <= 2:
+        self.selectedWorld = cmd[1] #set current world
+      else:
+        Logger.log("Invalid amount of arguments.", color="red")
+    
+    elif cmd[0] == "help":
+      if len(cmd) == 1:
+        Logger.log(
+          "\nhelp\n",
+          "\tshows this text\n",
+          "save <worldname>\n",
+          "\tsave world in loadedWorlds to folder \"worlds\"\n",
+          "load <worldname>\n",
+          "\tload world from folder \"worlds\" to loadedWorlds\n",
+          "del  <worldname>\n",
+          "\tdelete world from folder \"worlds\"\n",
+          "gen  <worldname>\n",
+          "\tgenerate new world, add it to loadedWorlds\n",
+          "sel  <worldname>\n",
+          "\tset selected world (in loadedWorlds)\n",
+          color="green", sep=""
+        )
+      else:
+        Logger.log("Invalid amount of arguments.", color="red")
+    
+    else:
+      Logger.log("No command \"", cmd[0], "\".", color="red")
+    
+    if self.selectedWorld != None:
+      Logger.log("\nselectedWorld: ", self.loadedWorlds[selectedWorld].name)
+      self.loadedWorlds[selectedWorld].print()
 
-  cmd = cmd.split(" ") #split cmd into pieces by spaces
-  
-  if cmd[0] == "save":
-    if len(cmd) > 1 and len(cmd) <= 2: #command only accepts 2 args
-      te2.world.World.saveWorldFile(loadedWorlds[cmd[1]]) #save world to textengine2/game/worlds
-      Logger.log("Saved world \"", cmd[1], "\" to worlds folder.", color="green")
-    else:
-      Logger.log("Invalid amount of arguments.", color="red")
-      
-  elif cmd[0] == "load":
-    if len(cmd) > 1 and len(cmd) <= 2: #command only accepts two arguments   
-      world = te2.world.World.loadWorldFile(cmd[1]) #load world from textengine2/game/worlds/ 
-      loadedWorlds[world.name] = world #add world to loadedWorlds
-      del world
-      Logger.log("Loaded world \"", cmd[1], "\" from worlds folder.", color="green")
-    else:
-      Logger.log("Invalid amount of arguments.", color="red")
-  
-  elif cmd[0] == "del":
-    if len(cmd) > 1 and len(cmd) <= 2: #command only accepts two arguments 
-      te2.world.World.delWorldFile(cmd[1]) #delete world from textengine2/game/worlds/
-      Logger.log("Deleted world \"", cmd[1], "\" from worlds folder.", color="green")
-    else:
-      Logger.log("Invalid amount of arguments.", color="red")
-  
-  elif cmd[0] == "gen":
-    if len(cmd) > 1 and len(cmd) <= 2:
-      world = te2.world.World(cmd[1]) #generate new world
-      loadedWorlds[world.name] = world #add world to loadedWorlds
-      del world
-    else:
-      Logger.log("Invalid amount of arguments.", color="red")
-  
-  elif cmd[0] == "sel":
-    if len(cmd) > 1 and len(cmd) <= 2:
-      selectedWorld = cmd[1] #set current world
-    else:
-      Logger.log("Invalid amount of arguments.", color="red")
-  
-  elif cmd[0] == "help":
-    if len(cmd) == 1:
-      Logger.log(
-        "\nhelp\n",
-        "\tshows this text\n",
-        "save <worldname>\n",
-        "\tsave world in loadedWorlds to folder \"worlds\"\n",
-        "load <worldname>\n",
-        "\tload world from folder \"worlds\" to loadedWorlds\n",
-        "del  <worldname>\n",
-        "\tdelete world from folder \"worlds\"\n",
-        "gen  <worldname>\n",
-        "\tgenerate new world, add it to loadedWorlds\n",
-        "sel  <worldname>\n",
-        "\tset selected world (in loadedWorlds)\n",
-        color="green", sep=""
-      )
-    else:
-      Logger.log("Invalid amount of arguments.", color="red")
-  
-  else:
-    Logger.log("No command \"", cmd[0], "\".", color="red")
-  
-  if selectedWorld != None:
-    Logger.log("\nselectedWorld: ", loadedWorlds[selectedWorld].name)
-    loadedWorlds[selectedWorld].print()
-  
+# ============================ FUNCTIONS =======================================
 def platformCheck(): 
   """check if system compatible, log info"""
   s = platform.system()
@@ -257,22 +276,10 @@ def objPrint(obj, compact=False):
   print(Logger.colorcodes["white"], end="")
 
 # ============================ MAIN ============================================
-loadedWorlds = {}
-selectedWorld = None #current selected world in loadedWorlds
+session1 = Session() #new game session
 
-platformCheck()
-if platform.system() == "Windows":
-  gui = GUI() #initalize game gui
-  gui.startLoop() #start gui loop, stop on this line until gui killed
+gui = GUI(session1) #initalize game gui, assign it a session to control
 
-#console loop, alternative to gui loop
-Logger.log(
-  ">>>> textengine2, by dawson gray <<<<","Type \"help\" for a list of commands.", 
-  color="green", sep="\n", end="\n\n"
-)
-while True:
-  cmd = input("> ")
-  if cmd != "" and cmd.isspace() == False: #check if cmd not just whitespace or empty
-    processCommand(cmd)
-  else: 
-    Logger.log("Nothing entered!", color="red")
+gui.startLoop() #start gui loop, continue past here when it exits
+
+Logger.log("Session ended!", color="red")
