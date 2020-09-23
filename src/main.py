@@ -19,7 +19,7 @@ class GUI(tkinter.Tk):
     self.__nextCommand = None #prefix private vars w/ "__"
     
     #tkinter instance vars
-    self.wm_iconphoto(False, tkinter.PhotoImage(file=os.getcwd()+"\\game\\assets\\icon.png")) #set icon
+    self.wm_iconphoto(False, tkinter.PhotoImage(file=os.getcwd()+"/game/assets/icon.png")) #set icon
     self.wm_title("textengine2")
     self.resizable(False, False)
     self.lift() #move window above all others
