@@ -1,5 +1,5 @@
-from logger import Logger
-from world import World
+from te2.logger import Logger
+from te2.world import World
 
 class Session:
   """
@@ -7,8 +7,12 @@ class Session:
   and has methods for manipulating that data.
   """
   def __init__(self):
+    Logger.log("Session created.", color="magenta")
     self.loadedWorlds = {}
     self.selectedWorld = None #current selected world in loadedWorlds
+  
+  def __del__(self):
+    Logger.log("Session destroyed.", color="magenta")
   
   def runCommand(self, cmd):
     """run a session command"""

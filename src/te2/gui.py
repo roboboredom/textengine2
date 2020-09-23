@@ -1,11 +1,14 @@
-import tkinter, turtle, os
+import os
+import tkinter 
+#import turtle
 from functools import partial
 from tkinter import filedialog
-from logger import Logger
+from te2.logger import Logger
 
 class GUI(tkinter.Tk):
   """
   GUI class, tkinter-based gui for controlling a game session.
+  Only supports Windows OS.
   """
   def __init__(self, session):
     """session: game session to control"""
@@ -16,7 +19,7 @@ class GUI(tkinter.Tk):
     self.__nextCommand = None #prefix private vars w/ "__"
     
     #tkinter instance vars
-    self.wm_iconphoto(False, tkinter.PhotoImage(file=os.getcwd()+"/game/assets/icon.png")) #set icon
+    self.wm_iconphoto(False, tkinter.PhotoImage(file=os.getcwd()+"\\game\\assets\\icon.png")) #set icon
     self.wm_title("textengine2")
     self.resizable(False, False)
     self.lift() #move window above all others
@@ -61,40 +64,40 @@ class GUI(tkinter.Tk):
     self.mapCanvas.pack()
 
     #turtle for drawing to canvas
-    self.mapPen = turtle.RawTurtle(canvas=self.mapCanvas) #assign turtle to canvas for rendering graphics
-    self.mapPen.speed(0) #disable turtle animation
-    self.mapPen.shape('square')
-    self.mapPen.hideturtle()
-    self.mapPen.screen.tracer(0, 0) #disable turtle screen refresh
-    self.mapPen.color("white") #set turtle color
-    self.mapPen.screen.bgcolor("black") #set turtle screen color
+    #self.mapPen = turtle.RawTurtle(canvas=self.mapCanvas) #assign turtle to canvas for rendering graphics
+    #self.mapPen.speed(0) #disable turtle animation
+    #self.mapPen.shape('square')
+    #self.mapPen.hideturtle()
+    #self.mapPen.screen.tracer(0, 0) #disable turtle screen refresh
+    #self.mapPen.color("white") #set turtle color
+    #self.mapPen.screen.bgcolor("black") #set turtle screen color
 
   #public functions
   def startLoop(self): #mainloop, function calls itself until told to stop
     Logger.log("Starting GUI loop.", color="red")
     self.focus_set() #give game window focus
     while True:
-      if self.__nextCommand != "quit": #special interface only command, exits interface
+      if self.__nextCommand != "quit": #special interface only command, exits interface 
         if self.__nextCommand != None:
           self.session.runCommand(self.__nextCommand) #do stuff with command, then proceed
           self.__nextCommand = None #reset for next loop
-          
-          self.__drawWorld()
         
+          #self.__drawWorld()
+
         try: #do tkinter processes
           self.update()
         except: #if the gui closed with close button
           Logger.log("GUI closed. Starting console loop.", color="red")
           break
-      
+        
       else:
         Logger.log("GUI closed by File > Quit. Starting console loop.", color="red")
         self.destroy()
         break
   
   #private functions
-  def __drawWorld(self):
-    pass
+  #def __drawWorld(self):
+  #  pass
 
   def __setCommand(self, command): 
     self.__nextCommand = command
