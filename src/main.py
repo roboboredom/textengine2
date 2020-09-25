@@ -14,16 +14,20 @@ def platformCheck():
   else: # other os
     Logger.log("Running on unknown OS. [NOT SUPPORTED] Things may not work!", color="red")
 
-#session1 = Session() #new game session
+# ============================ MAIN =============================
 
 platformCheck()
-s = platform.system()
+# s = platform.system()
 
-if s == "Windows":
-  gui = GUI(Session()) #initalize game gui, assign it a session to control
-  gui.startLoop() #start gui loop, continue past here when it exits
-  Logger.log("Session ended!", color="red")
-elif s == "Linux":
-  ui = UI(Session())
-  ui.startLoop()
-  Logger.log("Session ended!", color="red")
+gui = GUI(Session())
+gui.startLoop()
+Logger.log("Session ended!", color="red")
+
+# if s == "Windows":
+#   gui = GUI(Session()) #initalize game gui, assign it a session to control
+#   gui.startLoop() #start gui loop, continue past here when it exits
+#   Logger.log("Session ended!", color="red")
+# elif s == "Linux":
+#   ui = UI(Session())
+#   ui.startLoop()
+#   Logger.log("Session ended!", color="red")

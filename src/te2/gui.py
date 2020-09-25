@@ -1,5 +1,6 @@
 import os
-import tkinter 
+import tkinter
+import platform
 #import turtle
 from functools import partial
 from tkinter import filedialog
@@ -19,7 +20,11 @@ class GUI(tkinter.Tk):
     self.__nextCommand = None #prefix private vars w/ "__"
     
     #tkinter instance vars
-    self.wm_iconphoto(False, tkinter.PhotoImage(file=os.getcwd()+"\\game\\assets\\icon.png")) #set icon
+    if platform.system() == "Windows": #diff os filepath formats
+      self.wm_iconphoto(False, tkinter.PhotoImage(file=os.getcwd()+"\\game\\assets\\icon.png")) #set icon
+    elif platform.system() == "Linux":
+      self.wm_iconphoto(False, tkinter.PhotoImage(file=os.getcwd()+"/game/assets/icon.png")) #set icon
+    
     self.wm_title("textengine2")
     self.resizable(False, False)
     self.lift() #move window above all others
