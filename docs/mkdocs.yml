@@ -1,6 +1,0 @@
-site_name: mkdocs test
-
-theme: jekyll-theme-midnight
-
-plugins:
-   - hello-dolly
