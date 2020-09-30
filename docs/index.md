@@ -8,23 +8,51 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 
 Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
 
-```markdown
-Syntax highlighted code block
+```python
+# random variables
+_integer = 10
+_float = 172.322
+_bool = True
+_string = "Hello World!"
 
-# Header 1
-## Header 2
-### Header 3
+_list = [10, False, 10.2, 20, 10, "asd"]
 
-- Bulleted
-- List
+_dict = {
+  "apple"  : 10,
+  "orange" : 20,
+  "cherry" : 30
+}
 
-1. Numbered
-2. List
+# random conditionals
+while True:
+  cmd = input("> ")
+  if cmd == "exit":
+    break
+  elif cmd == "error":
+    raise Exception("[ERROR] This is a test error.")
+  else:
+    print("Command \"", cmd, "\" is not valid.", sep="")
 
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+# random class
+class Apple:
+  """apple class docstring"""
+  color = "red"
+  weight = 10.0
+  
+  def __init__(self, isRipe=False):
+    self.isRipe = isRipe
+  
+  def __str__(self):
+    return "A " + self.red + " apple."
+  
+  @staticmethod
+  def areApplesSame(a, b):
+    if a.weight == b.weight and a.isRipe == b.isRipe:
+      return True
+    else:
+      return False
 ```
+
 
 For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
