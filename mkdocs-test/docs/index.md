@@ -52,7 +52,11 @@ class Apple:
     else:
       return False
 ```
+### Pico-8 Plugin Test
 
+{{ pico-8: 46052 }}
+
+### Other stuff:
 
 For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
