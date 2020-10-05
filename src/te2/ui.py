@@ -8,7 +8,7 @@ class UI:
   def startLoop(self):
     Logger.log("Starting UI loop.", color="red")
 
-    while True:
+    while True:    
       cmd = input("> ")
 
       if cmd != "quit":

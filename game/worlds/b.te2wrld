@@ -2,7 +2,7 @@
 	"name": "b",
 	"xlen": 8,
 	"ylen": 8,
-	"array": [
+	"tiles": [
 		[
 			".",
 			".",

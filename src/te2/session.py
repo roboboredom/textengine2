@@ -1,5 +1,6 @@
 from te2.logger import Logger
 from te2.world import World
+from te2.entity import BaseEntity
 
 class Session:
   """
@@ -44,7 +45,7 @@ class Session:
     elif cmd[0] == "gen":
       if len(cmd) > 1 and len(cmd) <= 2:
         world = World(cmd[1]) #generate new world
-        self.loadedWorlds[world.name] = world #add world to loadedWorlds
+        self.loadedWorlds[world.name] = world #add world (dict key) to loadedWorlds
         del world
       else:
         Logger.log("Invalid amount of arguments.", color="red")
@@ -55,6 +56,12 @@ class Session:
       else:
         Logger.log("Invalid amount of arguments.", color="red")
     
+    elif cmd[0] == "newent":
+      if len(cmd) > 1 and len(cmd) <= 3:
+        self.loadedWorlds[self.selectedWorld].insertCopy( BaseEntity(symbol="E", x=int(cmd[1]), y=int(cmd[2])) )
+      else:
+        Logger.log("Invalid amount of arguments.", color="red")
+
     elif cmd[0] == "help":
       if len(cmd) == 1:
         Logger.log(
@@ -64,12 +71,14 @@ class Session:
           "\tsave world in loadedWorlds to folder \"worlds\"\n",
           "load <worldname>\n",
           "\tload world from folder \"worlds\" to loadedWorlds\n",
-          "del  <worldname>\n",
+          "del <worldname>\n",
           "\tdelete world from folder \"worlds\"\n",
-          "gen  <worldname>\n",
+          "gen <worldname>\n",
           "\tgenerate new world, add it to loadedWorlds\n",
-          "sel  <worldname>\n",
+          "sel <worldname>\n",
           "\tset selected world (in loadedWorlds)\n",
+          "newent <x> <y>\n",
+          "\tadd test entity to coords in selected world\n",
           color="green", sep=""
         )
       else:

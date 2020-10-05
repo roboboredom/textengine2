@@ -1,4 +1,3 @@
-"""world class and save/load functions"""
 import copy, json, os, platform, inspect
 
 class World:
@@ -20,19 +19,20 @@ class World:
       self.xlen = xlen
       self.ylen = ylen
       
-      self.array = [] 
-      for _y in range(0, self.ylen): #create default array of "." from dimensions
+      self.tiles = [] 
+      for _y in range(0, self.ylen): #create default tiles of "." from dimensions
         row = []
         for _x in range(0, self.xlen):
           row.append(".")
-        self.array.append(row)
+        self.tiles.append(row)
       
       self.ent_id_count = 0 #each entity has a unique id that stays the same between loads
       self.entities = []
 
   def print(self):
     """print world to console"""
-    for y in self.array:
+    print("id count:", self.ent_id_count)
+    for y in self.tiles:
       for x in y:
         if isinstance(x, int):
           print(self.entities[x].symbol, sep="", end="")
@@ -42,27 +42,36 @@ class World:
 
   def insertCopy(self, obj):
     """insert copy of object @ it's stored coords"""
-    clone = copy.deepcopy(obj) #copy it first, so we don"t modify the input obj (reference)
-    self.array[clone.y][clone.x] = self.ent_id_count
+    clone = copy.deepcopy(obj) #copy it first, so we don't modify the input obj (reference)
+   
+    clone.id = self.ent_id_count
+    
+    self.tiles[clone.y][clone.x] = self.ent_id_count
     self.ent_id_count += 1
+    
     self.entities.append(clone)
   
   def insertCopyAt(self, obj, x, y):
     """insert copy of object @ coords"""
-    clone = copy.deepcopy(obj)
+    clone = copy.deepcopy(obj) #copy it first, so we don't modify the input obj (reference)
+    
     clone.x = x
     clone.y = y
-    self.array[clone.y][clone.x] = self.ent_id_count
+    clone.id = self.ent_id_count
+    
+    self.tiles[clone.y][clone.x] = self.ent_id_count
     self.ent_id_count += 1
+    
     self.entities.append(clone)
 
-  def getSymbol(self, x, y): #better than just accessing self.array[][] - coords are backwards due to it's nesting
-    """returns symbol @ coords"""
-    return self.array[y][x]
+  def getTile(self, x, y): #better than just accessing self.tiles[][] - coords are backwards due to it's nesting
+    """returns tile value @ coords"""
+    return self.tiles[y][x]
   
   def getEntity(self, x, y):
     """returns entity instance @ coords"""
-    return self.entities[self.getSymbol(x, y)]
+    return self.entities[self.getTile(x, y)]
+
 
   @staticmethod
   def saveWorldFile(world):
