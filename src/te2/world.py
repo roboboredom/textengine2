@@ -1,21 +1,17 @@
 import copy, json, os, platform, inspect
+from te2.actquene import ActQuene
 
 class World:
   """
   class for a world, containing entities and tiles
   set shell=True to skip __init__ (no instance vars)
   """
-  xlen_max = 32 #world size caps
-  ylen_max = 32
+  xLenMax = 32 #world size caps
+  yLenMax = 32
   
   def __init__(self, name=None, xlen=8, ylen=8, shell=False):
     if not shell: #for deserialization, True = don"t instantiate any variables
       self.name = name
-      
-      if xlen < 0 or xlen > World.xlen_max: #check for bad map dimensions
-        raise Exception("[cannot create world \""+self.name+"\", xlen too big]")
-      if ylen < 0 or ylen > World.ylen_max:
-        raise Exception("[cannot create world \""+self.name+"\", ylen too big]")
       self.xlen = xlen
       self.ylen = ylen
       
@@ -34,43 +30,58 @@ class World:
     print("id count:", self.ent_id_count)
     for y in self.tiles:
       for x in y:
-        if isinstance(x, int):
-          print(self.entities[x].symbol, sep="", end="")
+        if isinstance(x, list):
+          print(self.entities[x[-1]], sep="", end="") #if entities on tile, display top entity on tile
         else:
           print(x, sep="", end="")
       print("\n", end="")
 
-  def insertCopy(self, obj):
-    """insert copy of object @ it's stored coords"""
+  def insertAt(self, obj):
+    """Insert entity at the coords in it's positionComponent."""
     clone = copy.deepcopy(obj) #copy it first, so we don't modify the input obj (reference)
-   
+
+    x = clone.data["components"]["positionComponent"]["x"]
+    y = clone.data["components"]["positionComponent"]["y"]
+
+    if isinstance(self.tiles[y][x], list): #allow entity stacking
+      self.tiles[y][x].append(self.ent_id_count)
+    else:
+      self.tiles[y][x] = [self.tiles[y][x], self.ent_id_count]
+    
     clone.id = self.ent_id_count
-    
-    self.tiles[clone.y][clone.x] = self.ent_id_count
     self.ent_id_count += 1
-    
     self.entities.append(clone)
   
-  def insertCopyAt(self, obj, x, y):
-    """insert copy of object @ coords"""
+  def insert(self, obj):
+    """Insert an entity into the world's entities, but do not place it in the world."""
     clone = copy.deepcopy(obj) #copy it first, so we don't modify the input obj (reference)
-    
-    clone.x = x
-    clone.y = y
+
     clone.id = self.ent_id_count
-    
-    self.tiles[clone.y][clone.x] = self.ent_id_count
     self.ent_id_count += 1
-    
     self.entities.append(clone)
 
-  def getTile(self, x, y): #better than just accessing self.tiles[][] - coords are backwards due to it's nesting
-    """returns tile value @ coords"""
-    return self.tiles[y][x]
+  def setTile(self, x, y, char):
+    if isinstance(self.tiles[y][x], list):
+      self.tiles[y][x][0]
+    else:
+      self.tiles[y][x][0]
+
+  def getTile(self, x, y): # Always use instead of accessing self.tiles directly!
+    """Return tile value at coords."""
+    if isinstance(self.tiles[y][x], list):
+      return self.tiles[y][x][0]
+    else:
+      return self.tiles[y][x]
   
-  def getEntity(self, x, y):
-    """returns entity instance @ coords"""
-    return self.entities[self.getTile(x, y)]
+  def getEntitiesAt(self, x, y):
+    """Return any entities at coords."""
+    if isinstance(self.tiles[y][x], list):
+      ents = []
+      for ID in self.tiles[y][x][1::]
+        ents.append(self.entities[ID])
+      return ents
+    else:
+      return None
 
 
   @staticmethod

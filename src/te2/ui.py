@@ -14,6 +14,7 @@ class UI:
       if cmd != "quit":
         if cmd.isspace() != True and cmd != "":
           self.session.runCommand(cmd)
+                  
         else:
           Logger.log("Nothing Entered!", color="red")
       else:

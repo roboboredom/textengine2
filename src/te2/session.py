@@ -1,6 +1,7 @@
 from te2.logger import Logger
 from te2.world import World
-from te2.entity import BaseEntity
+from te2.entity import Entity
+from te2.components import Components
 
 class Session:
   """
@@ -53,12 +54,6 @@ class Session:
     elif cmd[0] == "sel":
       if len(cmd) > 1 and len(cmd) <= 2:
         self.selectedWorld = cmd[1] #set current world
-      else:
-        Logger.log("Invalid amount of arguments.", color="red")
-    
-    elif cmd[0] == "newent":
-      if len(cmd) > 1 and len(cmd) <= 3:
-        self.loadedWorlds[self.selectedWorld].insertCopy( BaseEntity(symbol="E", x=int(cmd[1]), y=int(cmd[2])) )
       else:
         Logger.log("Invalid amount of arguments.", color="red")
 
