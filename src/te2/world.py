@@ -1,5 +1,5 @@
 import copy, json, os, platform, inspect
-from te2.actquene import ActQuene
+from te2.actqueue import ActQueue
 
 class World:
   """
@@ -22,8 +22,10 @@ class World:
           row.append(".")
         self.tiles.append(row)
       
-      self.ent_id_count = 0 #each entity has a unique id that stays the same between loads
+      self.entIdCount = 0 #each entity has a unique id that stays the same between loads
       self.entities = []
+
+      self.queue = ActQueue(world=self)
 
   def print(self):
     """print world to console"""
@@ -40,31 +42,32 @@ class World:
     """Insert entity at the coords in it's positionComponent."""
     clone = copy.deepcopy(obj) #copy it first, so we don't modify the input obj (reference)
 
-    x = clone.data["components"]["positionComponent"]["x"]
-    y = clone.data["components"]["positionComponent"]["y"]
-
-    if isinstance(self.tiles[y][x], list): #allow entity stacking
-      self.tiles[y][x].append(self.ent_id_count)
-    else:
-      self.tiles[y][x] = [self.tiles[y][x], self.ent_id_count]
+    coords = clone.components["positionComponent"]["coords"]
+    x = coords[0]
+    y = coords[1]
     
-    clone.id = self.ent_id_count
-    self.ent_id_count += 1
+    if isinstance(self.tiles[y][x], list): #allow entity stacking
+      self.tiles[y][x].append(self.entIdCount)
+    else:
+      self.tiles[y][x] = [self.tiles[y][x], self.entIdCount]
+    
+    clone.id = self.entIdCount
+    self.entIdCount += 1
     self.entities.append(clone)
   
   def insert(self, obj):
     """Insert an entity into the world's entities, but do not place it in the world."""
     clone = copy.deepcopy(obj) #copy it first, so we don't modify the input obj (reference)
 
-    clone.id = self.ent_id_count
-    self.ent_id_count += 1
+    clone.id = self.entIdCount
+    self.entIdCount += 1
     self.entities.append(clone)
 
   def setTile(self, x, y, char):
     if isinstance(self.tiles[y][x], list):
-      self.tiles[y][x][0]
+      self.tiles[y][x][0] = char
     else:
-      self.tiles[y][x][0]
+      self.tiles[y][x] = char
 
   def getTile(self, x, y): # Always use instead of accessing self.tiles directly!
     """Return tile value at coords."""
@@ -77,12 +80,11 @@ class World:
     """Return any entities at coords."""
     if isinstance(self.tiles[y][x], list):
       ents = []
-      for ID in self.tiles[y][x][1::]
+      for ID in self.tiles[y][x][1:]:
         ents.append(self.entities[ID])
       return ents
     else:
       return None
-
 
   @staticmethod
   def saveWorldFile(world):
@@ -90,31 +92,31 @@ class World:
     clone = copy.deepcopy(world) #copy world so we can modify it"s values just for this function
     
     if platform.system() == "Windows": #diff os filepath formats
-      file = open(os.getcwd() + "\\game\\worlds\\" + clone.name + ".te2wrld", "w") #create file if not exist, write only
+      worldFile = open(os.getcwd() + "\\game\\worlds\\" + clone.name + ".te2wrld", "w") #create file if not exist, write only
     elif platform.system() == "Linux":
-      file = open(os.getcwd() + "/game/worlds/" + clone.name + ".te2wrld", "w")
+      worldFile = open(os.getcwd() + "/game/worlds/" + clone.name + ".te2wrld", "w")
 
     newlist = []
     for obj in clone.entities: #change objects in list to json
       newlist.append([json.dumps(obj.__class__.__name__), json.dumps(obj.__dict__)])
     clone.entities = newlist
 
-    file.write(json.dumps(clone.__dict__, indent="\t"))
+    worldFile.write(json.dumps(clone.__dict__, indent="\t"))
     
     del clone #we dont need our copy anymore, delete it
-    file.close()
+    worldFile.close()
 
   @staticmethod
   def loadWorldFile(name):
     """load a world file, return it"""
     if platform.system() == "Windows": #diff os filepath formats
-      file = open(os.getcwd() + "\\game\\worlds\\" + name + ".te2wrld", "r") #read only
+      worldFile = open(os.getcwd() + "\\game\\worlds\\" + name + ".te2wrld", "r") #read only
     elif platform.system() == "Linux":
-      file = open(os.getcwd() + "/game/worlds/" + name + ".te2wrld", "r")
+      worldFile = open(os.getcwd() + "/game/worlds/" + name + ".te2wrld", "r")
     
     shell = World(shell=True) #new World instance without instance vars
 
-    with file as f: #load world json
+    with worldFile as f: #load world json
       shell.__dict__ = json.load(f)
     
     newlist = []
@@ -129,7 +131,7 @@ class World:
       del instance
     shell.entities = newlist
     
-    file.close()
+    worldFile.close()
     return shell
 
   @staticmethod

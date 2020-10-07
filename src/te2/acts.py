@@ -7,12 +7,12 @@ class Acts:
 	  raise TypeError("Non-instantiable class!")
 
   @staticmethod
-  def damageAct(actorId: int, doneAt: tuple, dmg: int):
+  def damageAct(actorId: int, doneToCoords: tuple, dmg: int):
     return {
-      "actName": "damageAct",
+      "actName": "damageAct", #actName & actorId are mandatory!
       "actorId": actorId,
 
-      "doneAt": doneAt,
+      "doneToCoords": doneToCoords,
       "dmg": dmg
     }
   

@@ -7,12 +7,12 @@ class Components:
 	  raise TypeError("Non-instantiable class!")
   
   @staticmethod
-  def positionComponent(x: int, y: int) -> tuple: # the ":" type & "->" returntype hints are just used by the IDE, not python.
+  def positionComponent(coords: tuple, canShareTile: bool) -> tuple: # the ":" type & "->" returntype hints are just used by the IDE, not python.
     return (
       "positionComponent", 
       {
-        "x" : x,
-        "y" : y
+        "coords" : coords,
+        "canShareTile" : canShareTile
       }
     )
     

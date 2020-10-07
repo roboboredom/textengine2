@@ -1,7 +1,5 @@
 from te2.logger import Logger
 from te2.world import World
-from te2.entity import Entity
-from te2.components import Components
 
 class Session:
   """
