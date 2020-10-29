@@ -1,4 +1,4 @@
-from component import ComponentLib
+from te2.ecs.componentMgr import ComponentLib
 
 class EntityFactory():
   """

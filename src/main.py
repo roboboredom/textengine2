@@ -1,23 +1,37 @@
-import platform, json
-from te2.acts import Acts
-from te2.logger import Logger
-from te2.session import Session
-from te2.gui import GUI
-from te2.ui import UI
-from te2.actqueue import ActQueue
-from te2.world import World
-from te2.ecs.entity import Entity
-from te2.ecs.component import Components
-from te2.ecs.system import System
+from te2.ecs.entityMgr import EntityFactory
+from te2.ecs.systemMgr import SystemFactory
 
-def platformCheck(): 
-  """check if system compatible, log info"""
-  s = platform.system()
-  if s == "Linux": # linux
-    Logger.log("Running on Linux. [SUPPORTED: UI]", color="green")
-  elif s == "Windows": # windows
-    Logger.log("Running on Windows. [SUPPORTED: GUI, UI]", color="green")
-  else: # other os
-    Logger.log("Running on unknown OS. [NOT SUPPORTED] Things may not work!", color="red")
 
-world1 = World(name = "Nauvis")
+entf = EntityFactory()
+sysf = SystemFactory()
+
+entf.componentLib.defineComponent(name = "visualComponent",
+  values = {
+    "name" : "Thicc Monke",
+    "desc" : "A bigass mofo monke."
+  }
+)
+entf.componentLib.defineComponent(name = "weightComponent", 
+  values = {
+    "weight" : 320
+  }
+)
+
+def printInfo(entity): #create system function
+  print("NAME:", entity.__components["visualComponent"]["name"])
+  print("\tDESCRIPTION:", entity.__components["visualComponent"]["desc"])
+  print("\tWEIGHT:", entity.__components["weightComponent"]["weight"])
+
+sysf.newSystem(systemName="printInfo",componentsToProcess=["visualComponent","weightComponent"],function=printInfo) #define system for function
+
+entities = []
+entities.append(
+  entf.newEntity(
+    components=[
+      entf.componentLib.newComponent("visualComponent"),
+      entf.componentLib.newComponent("weightComponent"),
+    ]
+  )
+)
+
+sysf.runSystem("printInfo", entities)
